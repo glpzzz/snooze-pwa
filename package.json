@@ -1,5 +1,5 @@
 {
-  "name": "Snooze",
+  "name": "snooze-pwa",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -38,8 +38,9 @@
     "terser": "^5.4.0",
     "typescript": "^5.1.6",
     "vite": "~5.2.0",
+    "vite-plugin-pwa": "^0.20.5",
     "vitest": "^0.34.6",
     "vue-tsc": "^2.0.22"
   },
-  "description": "An Ionic project"
+  "description": "PWA for Snooze Medical App"
 }
