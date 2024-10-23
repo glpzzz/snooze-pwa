@@ -27,8 +27,14 @@ export const useOpenAi = () => {
             const audio = base64ToFile(base64Audio, fileType, id); // Convert base64 to Blob
             console.log('blob', audio);
 
+            const extensions = {
+                'audio/webm;codecs=opus': 'webm',
+                'audio/aac': 'm4a',
+                'audio/mp4': 'mp4',
+            }
+
             const formData = new FormData();
-            formData.append('file', audio, `${id}.webm`);
+            formData.append('file', audio, `${id}.${extensions[fileType]}`);
             formData.append('model', 'whisper-1');
             formData.append('temperature', 0.2);
             formData.append('language', 'es');

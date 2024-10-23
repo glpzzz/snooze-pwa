@@ -25,8 +25,13 @@
           </ion-label>
         </ion-item>
 
-        <ion-item v-for="result in results" :key="result.id">
-          <ion-label>{{ result.text }}</ion-label>
+        <ion-item v-for="result in results" :key="result.id" :color="result.status === 'error' ? 'danger' : ''">
+          <ion-label>
+            <ion-skeleton-text v-if="result.status==='pending'" :animated="true"></ion-skeleton-text>
+            <p v-else>
+              {{ result.text }}
+            </p>
+          </ion-label>
         </ion-item>
 
       </ion-list>
@@ -34,7 +39,8 @@
       <div v-if="results.length === 0" class="ion-text-center ion-padding">
         Comience a grabar para añadir notas de la consulta.
       </div>
-      <ion-button v-else expand="block" @click="finish" :disabled="isProcessing || isRecording">Generar Registro</ion-button>
+      <ion-button v-else expand="block" @click="finish" :disabled="isProcessing || isRecording">Generar Registro
+      </ion-button>
 
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button
@@ -115,11 +121,12 @@ const toggleRecording = async () => {
         };
 
         results.value.push(result);
-        transcribeAudioBase64(result.id, result.recordDataBase64, result.mimeType).then((text) => {
-          result.text = text;
-          result.status = 'done';
-          results.value = [...results.value];
-        });
+        transcribeAudioBase64(result.id, result.recordDataBase64, result.mimeType)
+            .then((text) => {
+              result.text = text !== null ? text : 'failed';
+              result.status = text !== null ? 'done' : 'error';
+              results.value = [...results.value];
+            });
 
       });
     } catch (e) {
