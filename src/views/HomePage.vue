@@ -13,18 +13,7 @@
         </ion-toolbar>
       </ion-header>
 
-      <img alt="Image of Titan"
-           src="https://a.storyblok.com/f/152976/1254x836/2bba06502c/chihuahuas.jpg/m/1200x630/filters:focal(585x370:586x371)"/>
-
-      <ion-list lines="full">
-
-        <ion-item>
-          <ion-label>
-            <h1>Titán</h1>
-            <p>Perro / Chihuahua</p>
-          </ion-label>
-        </ion-item>
-
+      <ion-list v-if="results.length > 0" lines="full">
         <ion-item v-for="result in results" :key="result.id" :color="result.status === 'error' ? 'danger' : ''">
           <ion-label>
             <ion-skeleton-text v-if="result.status==='pending'" :animated="true"></ion-skeleton-text>
@@ -33,13 +22,13 @@
             </p>
           </ion-label>
         </ion-item>
-
       </ion-list>
 
       <div v-if="results.length === 0" class="ion-text-center ion-padding">
         Comience a grabar para añadir notas de la consulta.
       </div>
-      <ion-button v-else expand="block" @click="finish" :disabled="isProcessing || isRecording">Generar Registro
+      <ion-button v-else expand="block" @click="finish" :disabled="isProcessing || isRecording">
+        Generar Registro de Consulta
       </ion-button>
 
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
