@@ -58,6 +58,7 @@ import {
   IonFabButton,
   IonIcon,
   IonButton,
+  IonSkeletonText,
 } from '@ionic/vue';
 
 import {
@@ -66,9 +67,10 @@ import {
 } from 'ionicons/icons';
 import {ref, computed} from "vue";
 import {VoiceRecorder} from "capacitor-voice-recorder";
-import {useOpenAi} from "@/composables/useOpenAi";
+import {useBackend} from "@/composables/useBackend";
 
-const {transcribeAudioBase64} = useOpenAi();
+const consultationId = ref<string>('df8a15f1-9046-49d0-9146-0df178a29a5e');
+const {transcribeAudioBase64} = useBackend();
 const isRecording = ref<boolean>(false);
 const results = ref<{}>([]);
 const isProcessing = computed(() => {
@@ -109,14 +111,22 @@ const toggleRecording = async () => {
           status: 'pending',
         };
 
+        console.log(result);
+
         results.value.push(result);
-        transcribeAudioBase64(result.id, result.recordDataBase64, result.mimeType)
+        transcribeAudioBase64(consultationId, result.recordDataBase64, result.mimeType)
             .then((text) => {
               result.text = text !== null ? text : 'failed';
               result.status = text !== null ? 'done' : 'error';
               results.value = [...results.value];
+            })
+            .catch((e) => {
+              result.text = e.message;
+              result.status = 'error';
+            })
+            .finally(() => {
+              results.value = [...results.value];
             });
-
       });
     } catch (e) {
       console.error(e);
