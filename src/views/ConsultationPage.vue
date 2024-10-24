@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title v-if="consultation">{{ consultation.date }}</ion-title>
+        <ion-title v-if="consultation">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -10,7 +10,7 @@
 
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title v-if="consultation" size="large">{{ consultation.date }}</ion-title>
+          <ion-title v-if="consultation" size="large">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
         </ion-toolbar>
       </ion-header>
 
@@ -74,12 +74,13 @@
         Comience a grabar para añadir notas de la consulta.
       </p>
 
-      <ion-button v-if="results.length !== 0" expand="block" @click="finish" :disabled="isProcessing || isRecording || isCompleting">
+      <ion-button v-if="results.length !== 0 && consultation.isCompleted === false" expand="block" @click="finish"
+                  :disabled="isProcessing || isRecording || isCompleting">
         <ion-spinner v-if="isCompleting" name="dots"></ion-spinner>
         <span v-else>Generar Registro de Consulta</span>
       </ion-button>
 
-      <ion-fab v-if="consultationStatus" slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab v-if="consultationStatus && consultation.isCompleted === false" slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button
             :color="isRecording ? 'warning' : 'danger'"
             :disabled="!consultation"
@@ -121,6 +122,7 @@ import {
   IonSkeletonText,
   IonThumbnail,
   IonToast,
+  IonSpinner,
 } from '@ionic/vue';
 
 import {

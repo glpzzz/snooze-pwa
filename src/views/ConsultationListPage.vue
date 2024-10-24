@@ -21,14 +21,17 @@
       </ion-header>
 
       <ion-list>
-        <ion-item v-for="consultation in consultations" :key="consultation.id"
-                  :router-link="`/consultation/${consultation.id}`">
-          <ion-label>
-            <h2>{{consultation.patientName}} / {{consultation.species}}</h2>
-            <p>{{consultation.date}} - {{ consultation.clinicianName}}</p>
-          </ion-label>
-        </ion-item>
+        <ConsultationListItem v-for="consultation in consultations" :key="consultation.id"
+                              :consultation="consultation"/>
       </ion-list>
+
+      <ion-alert
+          :is-open="currentError != null"
+          :header="currentError?.header"
+          :sub-header="currentError?.subHeader"
+          :message="currentError?.message"
+          @didDismiss="currentError = null"
+      />
 
     </ion-content>
   </ion-page>
@@ -42,11 +45,10 @@ import {
   IonTitle,
   IonToolbar,
   IonList,
-  IonItem,
-  IonLabel,
   IonIcon,
   IonButton,
   IonButtons,
+  IonAlert,
 } from '@ionic/vue';
 import {
   addOutline, addSharp,
@@ -54,6 +56,7 @@ import {
 import {ref, onMounted} from "vue";
 import {useRouter} from 'vue-router';
 import {useBackend} from "@/composables/useBackend";
+import ConsultationListItem from "@/components/ConsultationListItem.vue";
 
 const clinicClinicianId = '5e6d7c8b-9a0f-1e2d-3c4b-5a6b7c8d9e0f';
 const patientId = '7e8d9c0b-1a2f-3e4d-5c6b-7a8b9c0d1e2f';
@@ -61,10 +64,15 @@ const patientId = '7e8d9c0b-1a2f-3e4d-5c6b-7a8b9c0d1e2f';
 const router = useRouter();
 const {createConsultation, getConsultations} = useBackend();
 
+const currentError = ref(null);
 const consultations = ref([]);
 
 onMounted(async () => {
- consultations.value = await getConsultations();
+  try {
+    consultations.value = await getConsultations();
+  } catch (e) {
+    displayError(e)
+  }
 })
 
 const onBtnCreateConsultationClick = async () => {
@@ -75,7 +83,15 @@ const onBtnCreateConsultationClick = async () => {
       await router.push(`/consultation/${consultationId}`);
     }
   } catch (e) {
-    console.error(e);
+    displayError(e)
+  }
+}
+
+const displayError = (e) => {
+  currentError.value = {
+    header: 'Error',
+    subHeader: e.name,
+    message: e.message,
   }
 }
 
