@@ -23,6 +23,7 @@
     "capacitor-voice-recorder": "^6.0.3",
     "ionicons": "^7.0.0",
     "vue": "^3.3.0",
+    "vue-markdown-render": "^2.2.1",
     "vue-router": "^4.2.0"
   },
   "devDependencies": {

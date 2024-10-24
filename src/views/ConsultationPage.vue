@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button default-href="/"></ion-back-button>
+        </ion-buttons>
         <ion-title v-if="consultation">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -10,6 +13,9 @@
 
       <ion-header collapse="condense">
         <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-back-button default-href="/"></ion-back-button>
+          </ion-buttons>
           <ion-title v-if="consultation" size="large">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
         </ion-toolbar>
       </ion-header>
@@ -75,9 +81,7 @@
           </ion-item-divider>
           <ion-item>
             <ion-label>
-              <code>
-                {{ consultation.detailsJson }}
-              </code>
+              <vue-markdown :source="consultation?.detailsMarkdown"/>
             </ion-label>
           </ion-item>
         </ion-item-group>
@@ -145,7 +149,6 @@ import {
   IonToast,
   IonSpinner,
 } from '@ionic/vue';
-
 import {
   stop,
   recording
@@ -153,6 +156,7 @@ import {
 import {useRoute, useRouter} from "vue-router";
 import {ref, computed, onMounted} from "vue";
 import {VoiceRecorder} from "capacitor-voice-recorder";
+import VueMarkdown from "vue-markdown-render";
 import {useBackend} from "@/composables/useBackend";
 
 const route = useRoute();
