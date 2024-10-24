@@ -124,6 +124,14 @@
           @didDismiss="onCompleteSuccess"
       />
 
+      <ion-alert
+          :is-open="currentError != null"
+          :header="currentError?.header"
+          :sub-header="currentError?.subHeader"
+          :message="currentError?.message"
+          @didDismiss="currentError = null"
+      />
+
     </ion-content>
   </ion-page>
 </template>
@@ -147,7 +155,7 @@ import {
   IonSkeletonText,
   IonThumbnail,
   IonToast,
-  IonSpinner,
+  IonSpinner, IonAlert,
 } from '@ionic/vue';
 import {
   stop,
@@ -175,6 +183,8 @@ const isProcessing = computed(() => {
 const isCompleting = ref<boolean>(false);
 const isToastOpen = ref<boolean>(false);
 
+const currentError = ref(null);
+
 onMounted(async () => {
 
   try {
@@ -196,7 +206,7 @@ onMounted(async () => {
     }
 
   } catch (e) {
-    console.error(e);
+    displayError(e);
   }
 
 })
@@ -206,12 +216,16 @@ const toggleRecording = async () => {
   let hasPermission = await VoiceRecorder.hasAudioRecordingPermission();
 
   if (!hasPermission.value) {
-    await VoiceRecorder.requestAudioRecordingPermission();
+    try {
+      await VoiceRecorder.requestAudioRecordingPermission();
+    } catch (e) {
+      displayError(e);
+    }
   }
 
   hasPermission = await VoiceRecorder.hasAudioRecordingPermission();
   if (!hasPermission.value) {
-    alert('no permission');
+    alert('You need to allow to record audio.');
     return;
   }
 
@@ -221,7 +235,7 @@ const toggleRecording = async () => {
     try {
       await VoiceRecorder.startRecording();
     } catch (e) {
-      console.error(e);
+      displayError(e);
     }
   } else {
     try {
@@ -251,7 +265,7 @@ const toggleRecording = async () => {
             });
       });
     } catch (e) {
-      console.error(e);
+      displayError(e);
     }
   }
 };
@@ -262,7 +276,15 @@ const finish = async () => {
     await completeConsultation(id);
     isToastOpen.value = true;
   } catch (e) {
-    console.error(e);
+    displayError(e);
+  }
+}
+
+const displayError = (e) => {
+  currentError.value = {
+    header: 'Error',
+    subHeader: e.name,
+    message: e.message,
   }
 }
 
