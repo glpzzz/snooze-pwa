@@ -14,7 +14,6 @@
         </ion-toolbar>
       </ion-header>
 
-
       <ion-list lines="full">
 
         <ion-item-group>
@@ -52,42 +51,64 @@
           </ion-item>
         </ion-item-group>
 
-        <ion-item-group>
+        <ion-item-group v-if="consultationStatus?.isRecording">
           <ion-item-divider>
             <ion-label>Notas de consulta</ion-label>
           </ion-item-divider>
-        </ion-item-group>
-        <ion-item v-if="!consultationStatus">
-          <ion-skeleton-text :animated="true"></ion-skeleton-text>
-        </ion-item>
-        <ion-item v-else v-for="result in results" :key="result.id" :color="result.status === 'error' ? 'danger' : ''">
-          <ion-label>
-            <ion-skeleton-text v-if="result.status==='pending'" :animated="true"></ion-skeleton-text>
-            <p v-else>
+          <ion-item v-if="!consultationStatus">
+            <ion-skeleton-text :animated="true"></ion-skeleton-text>
+          </ion-item>
+          <ion-item v-else v-for="result in results" :key="result.id"
+                    :color="result.status === 'error' ? 'danger' : ''">
+            <ion-label v-if="result.status === 'pending'">
+              <ion-skeleton-text v-if="result.status==='pending'" :animated="true"></ion-skeleton-text>
+            </ion-label>
+            <ion-label v-else>
               {{ result.text }}
-            </p>
-          </ion-label>
-        </ion-item>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group v-if="consultation?.isCompleted">
+          <ion-item-divider>
+            <ion-label>Procesado</ion-label>
+          </ion-item-divider>
+          <ion-item>
+            <ion-label>
+              <code>
+                {{ consultation.detailsJson }}
+              </code>
+            </ion-label>
+          </ion-item>
+        </ion-item-group>
+
       </ion-list>
 
-      <p v-if="consultationStatus && results.length === 0" class="ion-text-center ion-padding">
-        Comience a grabar para añadir notas de la consulta.
+      <template v-if="consultationStatus?.isRecording">
+        <p v-if="consultationStatus && results.length === 0" class="ion-text-center ion-padding">
+          Comience a grabar para añadir notas de la consulta.
+        </p>
+
+        <ion-button v-if="results.length !== 0 && consultationStatus.isRecording" expand="block" @click="finish"
+                    :disabled="isProcessing || isRecording || isCompleting">
+          <ion-spinner v-if="isCompleting" name="dots"></ion-spinner>
+          <span v-else>Generar Registro de Consulta</span>
+        </ion-button>
+
+        <ion-fab v-if="consultationStatus?.isRecording" slot="fixed" vertical="bottom"
+                 horizontal="end">
+          <ion-fab-button
+              :color="isRecording ? 'warning' : 'danger'"
+              :disabled="!consultation"
+              @click="toggleRecording">
+            <ion-icon :icon="isRecording ? stop : recording"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </template>
+      <p v-else-if="consultationStatus?.isTranslating" class="ion-text-center ion-padding">
+        Procesando las notas de la consulta. <br>
+        Estará listo en unos minutos.
       </p>
-
-      <ion-button v-if="results.length !== 0 && consultation.isCompleted === false" expand="block" @click="finish"
-                  :disabled="isProcessing || isRecording || isCompleting">
-        <ion-spinner v-if="isCompleting" name="dots"></ion-spinner>
-        <span v-else>Generar Registro de Consulta</span>
-      </ion-button>
-
-      <ion-fab v-if="consultationStatus && consultation.isCompleted === false" slot="fixed" vertical="bottom" horizontal="end">
-        <ion-fab-button
-            :color="isRecording ? 'warning' : 'danger'"
-            :disabled="!consultation"
-            @click="toggleRecording">
-          <ion-icon :icon="isRecording ? stop : recording"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
 
       <!-- Success Toast -->
       <ion-toast
@@ -151,19 +172,29 @@ const isCompleting = ref<boolean>(false);
 const isToastOpen = ref<boolean>(false);
 
 onMounted(async () => {
-  consultation.value = await getConsultation(id);
-  consultationStatus.value = await getConsultationStatus(id);
-  consultationStatus.value = consultationStatus.value ? consultationStatus.value : {}
 
-  if (consultationStatus.value.transcriptions) {
-    for (const transcription of consultationStatus.value.transcriptions) {
-      results.value.push({
-        id: `${consultation.value.id}-${Math.random()}`,
-        text: transcription,
-        status: 'done',
-      })
+  try {
+    consultation.value = await getConsultation(id);
+
+    if (!consultation.value.isCompleted) {
+      consultationStatus.value = await getConsultationStatus(id);
+      consultationStatus.value = consultationStatus.value ? consultationStatus.value : {}
+
+      if (consultationStatus.value.transcriptions) {
+        for (const transcription of consultationStatus.value.transcriptions) {
+          results.value.push({
+            id: `${consultation.value.id}-${Math.random()}`,
+            text: transcription,
+            status: 'done',
+          })
+        }
+      }
     }
+
+  } catch (e) {
+    console.error(e);
   }
+
 })
 
 const toggleRecording = async () => {
