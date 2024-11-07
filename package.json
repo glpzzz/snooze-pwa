@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate-openapi": "openapi-generator-cli generate -i schema.json -g typescript-axios -o src/generated/openapi-snooze"
   },
   "dependencies": {
     "@capacitor/app": "6.0.1",
