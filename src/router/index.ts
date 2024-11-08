@@ -6,16 +6,16 @@ import ConsultationPage from '../views/ConsultationPage.vue'
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
-        redirect: '/consultation'
+        redirect: '/consultations'
     },
     {
-        path: '/consultation',
+        path: '/consultations',
         name: 'Consultations',
         component: ConsultationListPage
     },
     {
-        path: '/consultation/:id',
-        name: 'Consultation',
+        path: '/consultations/:id',
+        name: 'Consultation Details',
         component: ConsultationPage
     }
 ]

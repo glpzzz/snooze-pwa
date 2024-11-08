@@ -1,8 +1,8 @@
 <template>
-  <ion-item :router-link="`/consultation/${consultation.id}`">
+  <ion-item :router-link="`/consultations/${consultation.id}`">
     <ion-label>
-      <h2>{{consultation.patientName}} / {{consultation.species}}</h2>
-      <p>{{consultation.date}} - {{ consultation.clinicianName}}</p>
+      <h2>{{consultation.patient.name}} / {{consultation.patient.species}}</h2>
+      <p>{{consultation.date}} - {{ consultation.clinician.name}}</p>
     </ion-label>
   </ion-item>
 </template>

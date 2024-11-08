@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="consultation">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
+        <ion-title v-if="data">{{ new Date(data.date).toLocaleString() }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -13,10 +13,7 @@
 
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-back-button default-href="/"></ion-back-button>
-          </ion-buttons>
-          <ion-title v-if="consultation" size="large">{{ new Date(consultation.date).toLocaleString() }}</ion-title>
+          <ion-title v-if="data" size="large">{{ new Date(data.date).toLocaleString() }}</ion-title>
         </ion-toolbar>
       </ion-header>
 
@@ -27,7 +24,7 @@
             <ion-label>Paciente</ion-label>
           </ion-item-divider>
 
-          <ion-item v-if="!consultation">
+          <ion-item v-if="!data">
             <ion-thumbnail slot="start">
               <ion-skeleton-text :animated="true"></ion-skeleton-text>
             </ion-thumbnail>
@@ -51,78 +48,68 @@
               />
             </ion-thumbnail>
             <ion-label>
-              <h2>{{ consultation.patientName }}</h2>
-              <p>{{ consultation.species }}</p>
+              <h2>{{ data.patient.name }}</h2>
+              <p>{{ data.patient.species }}</p>
             </ion-label>
           </ion-item>
         </ion-item-group>
-
-        <ion-item-group v-if="consultationStatus?.isRecording">
-          <ion-item-divider>
-            <ion-label>Notas de consulta</ion-label>
-          </ion-item-divider>
-          <ion-item v-if="!consultationStatus">
-            <ion-skeleton-text :animated="true"></ion-skeleton-text>
-          </ion-item>
-          <ion-item v-else v-for="result in results" :key="result.id"
-                    :color="result.status === 'error' ? 'danger' : ''">
-            <ion-label v-if="result.status === 'pending'">
-              <ion-skeleton-text v-if="result.status==='pending'" :animated="true"></ion-skeleton-text>
-            </ion-label>
-            <ion-label v-else>
-              {{ result.text }}
-            </ion-label>
-          </ion-item>
-        </ion-item-group>
-
-        <ion-item-group v-if="consultation?.isCompleted">
-          <ion-item-divider>
-            <ion-label>Procesado</ion-label>
-          </ion-item-divider>
-          <ion-item>
-            <ion-label>
-              <vue-markdown :source="consultation?.detailsMarkdown"/>
-            </ion-label>
-          </ion-item>
-        </ion-item-group>
-
       </ion-list>
 
-      <template v-if="consultationStatus?.isRecording">
-        <p v-if="consultationStatus && results.length === 0" class="ion-text-center ion-padding">
-          Comience a grabar para añadir notas de la consulta.
+      <template v-if="dataStatus || data?.state === 'Final'">
+        <template v-if="dataStatus?.isRecording">
+          <p v-if="dataStatus.transcriptions.length === 0" class="ion-text-center ion-padding">
+            Comience a grabar para añadir notas de la consulta.
+          </p>
+          <ion-list v-else>
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>Notas de consulta</ion-label>
+              </ion-item-divider>
+              <ion-item v-for="result in dataStatus.transcriptions" :key="result.id">
+                <ion-label>
+                  {{ result.text }}
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <ion-button expand="block" @click="finishRecording">
+                    Terminar grabación
+                  </ion-button>
+                </ion-label>
+              </ion-item>
+            </ion-item-group>
+          </ion-list>
+          <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+            <ion-fab-button
+                :color="isRecordingAudio ? 'warning' : 'danger'"
+                @click="toggleRecording">
+              <ion-icon :icon="isRecordingAudio ? stop : recording"></ion-icon>
+            </ion-fab-button>
+          </ion-fab>
+        </template>
+        <p v-else-if="dataStatus?.isTranslating || (dataStatus?.isReviewAccepted && dataStatus?.isPersisting)"
+           class="ion-text-center ion-padding">
+          Procesando las notas de la consulta. <br>
+          Estará listo en unos minutos.
         </p>
-
-        <ion-button v-if="results.length !== 0 && consultationStatus.isRecording" expand="block" @click="finish"
-                    :disabled="isProcessing || isRecording || isCompleting">
-          <ion-spinner v-if="isCompleting" name="dots"></ion-spinner>
-          <span v-else>Generar Registro de Consulta</span>
-        </ion-button>
-
-        <ion-fab v-if="consultationStatus?.isRecording" slot="fixed" vertical="bottom"
-                 horizontal="end">
-          <ion-fab-button
-              :color="isRecording ? 'warning' : 'danger'"
-              :disabled="!consultation"
-              @click="toggleRecording">
-            <ion-icon :icon="isRecording ? stop : recording"></ion-icon>
-          </ion-fab-button>
-        </ion-fab>
+        <template v-if="dataStatus?.isReviewing">
+          <p>display object editor</p>
+          <ion-button expand="block" @click="sendCorrections">
+            Enviar
+          </ion-button>
+          <ion-button color="success" expand="block" @click="closeConsultation">
+            Terminar
+          </ion-button>
+        </template>
+        <template v-else-if="dataStatus?.isCompleted || data.state=='Final'">
+          <code v-if="dataStatus?.isCompleted">
+            {{ JSON.stringify(dataStatus.structuredTranslation) }}
+          </code>
+          <code v-else>
+            {{ JSON.stringify(data.file.content) }}
+          </code>
+        </template>
       </template>
-      <p v-else-if="consultationStatus?.isTranslating" class="ion-text-center ion-padding">
-        Procesando las notas de la consulta. <br>
-        Estará listo en unos minutos.
-      </p>
-
-      <!-- Success Toast -->
-      <ion-toast
-          :is-open="isToastOpen"
-          message="Notas de consulta enviadas"
-          duration="3000"
-          position="top"
-          color="success"
-          @didDismiss="onCompleteSuccess"
-      />
 
       <ion-alert
           :is-open="currentError != null"
@@ -152,64 +139,93 @@ import {
   IonFabButton,
   IonIcon,
   IonButton,
+  IonButtons,
+  IonBackButton,
   IonSkeletonText,
   IonThumbnail,
   IonToast,
-  IonSpinner, IonAlert,
+  IonSpinner, IonAlert, loadingController,
 } from '@ionic/vue';
 import {
   stop,
   recording
 } from 'ionicons/icons';
 import {useRoute, useRouter} from "vue-router";
-import {ref, computed, onMounted} from "vue";
+import {ref, computed, onMounted, onUnmounted, watch} from "vue";
 import {VoiceRecorder} from "capacitor-voice-recorder";
 import VueMarkdown from "vue-markdown-render";
 import {useBackend} from "@/composables/useBackend";
+import {Configuration, SnoozeApiApi} from "@/generated/openapi-snooze";
+import {EventSourcePolyfill} from 'event-source-polyfill';
+
+const config = new Configuration({
+  basePath: import.meta.env.VITE_BACKEND_BASE_URL,
+  apiKey: import.meta.env.VITE_BACKEND_API_KEY,
+});
+
+const apiClient = new SnoozeApiApi(config);
 
 const route = useRoute();
 const router = useRouter();
-const {getConsultation, getConsultationStatus, transcribeAudioBase64, completeConsultation} = useBackend();
 
 const {id} = route.params;
-const isRecording = ref<boolean>(false);
-const consultation = ref<object>(null)
-const consultationStatus = ref<object>(null)
-const results = ref<{}>([]);
-const isProcessing = computed(() => {
-  return results.value.some(result => result.status === 'pending');
+const data = ref<any | null>(null);
+const dataStatusChannel = ref<any | null>(null);
+const dataStatus = ref<any | null>(null);
+const isRecordingAudio = ref<boolean>(false);
+const currentError = ref<any | null>(null);
+const loading = ref<boolean>(false);
+let loadingDialog = null;
+
+watch(loading, async (oldValue, newValue) => {
+  if (loading.value) {
+    loadingDialog.present();
+  } else {
+    loadingDialog.dismiss();
+  }
 });
 
-const isCompleting = ref<boolean>(false);
-const isToastOpen = ref<boolean>(false);
-
-const currentError = ref(null);
-
 onMounted(async () => {
+  loadingDialog = await loadingController.create({
+    message: 'Please wait...',
+  });
 
-  try {
-    consultation.value = await getConsultation(id);
+  loading.value = true;
+  await apiClient.consultationDetails(id)
+      .then(response => {
+        data.value = response.data;
+        console.log(response.data);
 
-    if (!consultation.value.isCompleted) {
-      consultationStatus.value = await getConsultationStatus(id);
-      consultationStatus.value = consultationStatus.value ? consultationStatus.value : {}
+        if (data.value.state !== 'Final') {
+          console.log('opening SSE channel');
+          dataStatusChannel.value = new EventSourcePolyfill(`${config.basePath}/consultations/${id}/sse`, {
+            headers: {
+              'X-API-KEY': config.apiKey,
+            }
+          });
 
-      if (consultationStatus.value.transcriptions) {
-        for (const transcription of consultationStatus.value.transcriptions) {
-          results.value.push({
-            id: `${consultation.value.id}-${Math.random()}`,
-            text: transcription,
-            status: 'done',
-          })
+          dataStatusChannel.value.onmessage = (event) => {
+            console.log(event, JSON.parse(event.data));
+            dataStatus.value = JSON.parse(event.data);
+          };
+
+          dataStatusChannel.value.onerror = (err) => {
+            console.error(err);
+          }
         }
-      }
-    }
+      })
+      .catch(error => {
+        displayError(error);
+      });
+  loading.value = false;
+});
 
-  } catch (e) {
-    displayError(e);
+onUnmounted(() => {
+  if (dataStatusChannel.value) {
+    console.log('closing the channel');
+    dataStatusChannel.value.close();
   }
-
-})
+});
 
 const toggleRecording = async () => {
 
@@ -229,9 +245,9 @@ const toggleRecording = async () => {
     return;
   }
 
-  isRecording.value = !isRecording.value;
+  isRecordingAudio.value = !isRecordingAudio.value;
 
-  if (isRecording.value) {
+  if (isRecordingAudio.value) {
     try {
       await VoiceRecorder.startRecording();
     } catch (e) {
@@ -239,29 +255,25 @@ const toggleRecording = async () => {
     }
   } else {
     try {
-      VoiceRecorder.stopRecording().then((result) => {
 
-        const recordId = Date.now();
-        result = {
-          ...result.value,
-          id: recordId,
-          text: '',
-          status: 'pending',
+      VoiceRecorder.stopRecording().then(async (result) => {
+
+        const addRecordingDto = {
+          recording: result.value.recordDataBase64
         };
 
-        results.value.push(result);
-        transcribeAudioBase64(id, result.recordDataBase64, result.mimeType)
-            .then((text) => {
-              result.text = text !== null ? text : 'failed';
-              result.status = text !== null ? 'done' : 'error';
-              results.value = [...results.value];
+        console.log(id, addRecordingDto);
+        dataStatus.value.transcriptions.push({
+          id: 'lolo',
+          text: '...'
+        });
+
+        await apiClient.addRecording(id, addRecordingDto)
+            .then(response => {
+              console.log(response);
             })
-            .catch((e) => {
-              result.text = e.message;
-              result.status = 'error';
-            })
-            .finally(() => {
-              results.value = [...results.value];
+            .catch(error => {
+              displayError(error);
             });
       });
     } catch (e) {
@@ -270,14 +282,46 @@ const toggleRecording = async () => {
   }
 };
 
-const finish = async () => {
-  try {
-    isCompleting.value = true;
-    await completeConsultation(id);
-    isToastOpen.value = true;
-  } catch (e) {
-    displayError(e);
-  }
+const finishRecording = async () => {
+  loading.value = true;
+  await apiClient.finishConsultationRecordings(id)
+      .then(response => {
+        console.log(response);
+        loading.value = false;
+      })
+      .catch(error => {
+        loading.value = false;
+        displayError(error);
+      });
+}
+
+const sendCorrections = async () => {
+  loading.value = true;
+  await apiClient.correctConsultationTranslation(id, {
+    correctedTranslation: '',
+  })
+      .then(response => {
+        console.log(response);
+        loading.value = false;
+      })
+      .catch(error => {
+        loading.value = false;
+        displayError(error);
+      });
+}
+
+const closeConsultation = async () => {
+  loading.value = true;
+  await apiClient.closeConsultation(id)
+      .then(response => {
+        console.log(response);
+        loading.value = false;
+        router.push('/consultations');
+      })
+      .catch(error => {
+        loading.value = false;
+        displayError(error);
+      });
 }
 
 const displayError = (e) => {
@@ -286,10 +330,6 @@ const displayError = (e) => {
     subHeader: e.name,
     message: e.message,
   }
-}
-
-const onCompleteSuccess = () => {
-  router.push('/consultation');
 }
 
 </script>
