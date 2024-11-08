@@ -18,98 +18,39 @@
       </ion-header>
 
       <ion-list lines="full">
-
-        <ion-item-group>
-          <ion-item-divider>
-            <ion-label>Paciente</ion-label>
-          </ion-item-divider>
-
-          <ion-item v-if="!data">
-            <ion-thumbnail slot="start">
-              <ion-skeleton-text :animated="true"></ion-skeleton-text>
-            </ion-thumbnail>
-            <ion-label>
-              <h3>
-                <ion-skeleton-text :animated="true" style="width: 80%;"></ion-skeleton-text>
-              </h3>
-              <p>
-                <ion-skeleton-text :animated="true" style="width: 60%;"></ion-skeleton-text>
-              </p>
-              <p>
-                <ion-skeleton-text :animated="true" style="width: 30%;"></ion-skeleton-text>
-              </p>
-            </ion-label>
-          </ion-item>
-          <ion-item v-else>
-            <ion-thumbnail slot="start">
-              <img
-                  src="https://docs-demo.ionic.io/assets/madison.jpg"
-                  alt="The Wisconsin State Capitol building in Madison, WI at night"
-              />
-            </ion-thumbnail>
-            <ion-label>
-              <h2>{{ data.patient.name }}</h2>
-              <p>{{ data.patient.species }}</p>
-            </ion-label>
-          </ion-item>
-        </ion-item-group>
+        <ConsultationHeader :data="data"/>
+        <ion-item v-if="!dataStatus && data?.state!='Final'">
+          <ion-spinner class="ion-align-self-center"></ion-spinner>
+        </ion-item>
+        <ConsultationTranscriptionsList
+            v-if="dataStatus?.isRecording || dataStatus?.isTranslating"
+            :dataStatus="dataStatus"
+            @btn-finish-recordings-clicked="finishRecording"/>
+        <ConsultationEditor
+            v-else-if="dataStatus?.isReviewing" :data="data"
+            @btn-send-corrections-clicked="sendCorrections"/>
+        <ConsultationViewer
+            v-else-if="dataStatus?.isCompleted || data?.state=='Final'"
+            :content="dataStatus?.isCompleted ? dataStatus?.structuredTranslation : data?.file.content"/>
       </ion-list>
 
-      <template v-if="dataStatus || data?.state === 'Final'">
-        <template v-if="dataStatus?.isRecording">
-          <p v-if="dataStatus.transcriptions.length === 0" class="ion-text-center ion-padding">
-            Comience a grabar para añadir notas de la consulta.
-          </p>
-          <ion-list v-else>
-            <ion-item-group>
-              <ion-item-divider>
-                <ion-label>Notas de consulta</ion-label>
-              </ion-item-divider>
-              <ion-item v-for="result in dataStatus.transcriptions" :key="result.id">
-                <ion-label>
-                  {{ result.text }}
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>
-                  <ion-button expand="block" @click="finishRecording">
-                    Terminar grabación
-                  </ion-button>
-                </ion-label>
-              </ion-item>
-            </ion-item-group>
-          </ion-list>
-          <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-            <ion-fab-button
-                :color="isRecordingAudio ? 'warning' : 'danger'"
-                @click="toggleRecording">
-              <ion-icon :icon="isRecordingAudio ? stop : recording"></ion-icon>
-            </ion-fab-button>
-          </ion-fab>
-        </template>
-        <p v-else-if="dataStatus?.isTranslating || (dataStatus?.isReviewAccepted && dataStatus?.isPersisting)"
-           class="ion-text-center ion-padding">
-          Procesando las notas de la consulta. <br>
-          Estará listo en unos minutos.
-        </p>
-        <template v-if="dataStatus?.isReviewing">
-          <p>display object editor</p>
-          <ion-button expand="block" @click="sendCorrections">
-            Enviar
-          </ion-button>
-          <ion-button color="success" expand="block" @click="closeConsultation">
-            Terminar
-          </ion-button>
-        </template>
-        <template v-else-if="dataStatus?.isCompleted || data.state=='Final'">
-          <code v-if="dataStatus?.isCompleted">
-            {{ JSON.stringify(dataStatus.structuredTranslation) }}
-          </code>
-          <code v-else>
-            {{ JSON.stringify(data.file.content) }}
-          </code>
-        </template>
-      </template>
+      <ion-fab v-if="dataStatus?.isRecording || dataStatus?.isReviewing" slot="fixed" vertical="bottom"
+               horizontal="end">
+        <ion-fab-button
+            v-if="dataStatus?.isRecording"
+            :color="isRecordingAudio ? 'warning' : 'danger'"
+            @click="toggleRecording">
+          <ion-icon
+              :ios="isRecordingAudio ? stopOutline : recordingOutline"
+              :md="isRecordingAudio ? stopSharp : recordingSharp"/>
+        </ion-fab-button>
+        <ion-fab-button
+            v-else-if="dataStatus?.isReviewing"
+            color="success"
+            @click="closeConsultation">
+          <ion-icon :ios="sendOutline" :md="sendSharp"/>
+        </ion-fab-button>
+      </ion-fab>
 
       <ion-alert
           :is-open="currentError != null"
@@ -132,31 +73,29 @@ import {
   IonToolbar,
   IonList,
   IonItem,
-  IonItemGroup,
-  IonItemDivider,
-  IonLabel,
+  IonSpinner,
   IonFab,
   IonFabButton,
   IonIcon,
-  IonButton,
   IonButtons,
   IonBackButton,
-  IonSkeletonText,
-  IonThumbnail,
-  IonToast,
-  IonSpinner, IonAlert, loadingController,
+  IonAlert,
+  loadingController,
 } from '@ionic/vue';
 import {
-  stop,
-  recording
+  stopOutline, stopSharp,
+  recordingOutline, recordingSharp,
+  sendOutline, sendSharp,
 } from 'ionicons/icons';
 import {useRoute, useRouter} from "vue-router";
-import {ref, computed, onMounted, onUnmounted, watch} from "vue";
+import {ref, onMounted, onUnmounted, watch} from "vue";
 import {VoiceRecorder} from "capacitor-voice-recorder";
-import VueMarkdown from "vue-markdown-render";
-import {useBackend} from "@/composables/useBackend";
 import {Configuration, SnoozeApiApi} from "@/generated/openapi-snooze";
 import {EventSourcePolyfill} from 'event-source-polyfill';
+import ConsultationTranscriptionsList from "@/components/ConsultationTranscriptionsList.vue";
+import ConsultationEditor from "@/components/ConsultationEditor.vue";
+import ConsultationViewer from "@/components/ConsultationViewer.vue";
+import ConsultationHeader from "@/components/ConsultationHeader.vue";
 
 const config = new Configuration({
   basePath: import.meta.env.VITE_BACKEND_BASE_URL,
