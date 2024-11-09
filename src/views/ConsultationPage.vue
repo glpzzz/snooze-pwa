@@ -32,7 +32,7 @@
             @btn-send-corrections-clicked="sendCorrections"/>
         <ConsultationViewer
             v-else-if="dataStatus?.isCompleted || data?.state=='Final'"
-            :content="dataStatus?.isCompleted ? dataStatus?.structuredTranslation : data?.file?.content"/>
+            :content="JSON.parse(dataStatus?.isCompleted ? dataStatus?.structuredTranslation : data?.file?.content)"/>
       </ion-list>
 
       <ion-fab v-if="dataStatus?.isRecording || dataStatus?.isReviewing" slot="fixed" vertical="bottom"
@@ -90,13 +90,12 @@ import {
 import {useRoute, useRouter} from "vue-router";
 import {ref, onMounted, onUnmounted, watch} from "vue";
 import {VoiceRecorder} from "capacitor-voice-recorder";
-import {Configuration, SnoozeApiApi} from "@/generated/openapi-snooze";
+import {Configuration, SnoozeApiApi, ConsultationDetailDto} from "@/generated/openapi-snooze";
 import {EventSourcePolyfill} from 'event-source-polyfill';
 import ConsultationTranscriptionsList from "@/components/ConsultationTranscriptionsList.vue";
 import ConsultationEditor from "@/components/ConsultationEditor.vue";
 import ConsultationViewer from "@/components/ConsultationViewer.vue";
 import ConsultationHeader from "@/components/ConsultationHeader.vue";
-import {Consultation} from "@/types/Snooze";
 import {useLoading} from "@/composables/useLoading";
 
 const config = new Configuration({
@@ -109,8 +108,8 @@ const apiClient = new SnoozeApiApi(config);
 const route = useRoute();
 const router = useRouter();
 
-const {id} = route.params;
-const data = ref<Consultation | null>(null);
+const {id} = route.params as { id:string };
+const data = ref<ConsultationDetailDto | null>(null);
 const dataStatusChannel = ref<EventSourcePolyfill | null>(null);
 const dataStatus = ref<any | null>(null);
 const dataSchema = ref<any | null>(null);
@@ -123,7 +122,7 @@ onMounted(async () => {
   console.log('trying to show the loading', loading.value);
   await apiClient.consultationDetails(id)
       .then(response => {
-        data.value = response.data as Consultation;
+        data.value = response.data;
         console.log(data.value);
 
         if (data.value.state !== 'Final') {

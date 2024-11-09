@@ -8,9 +8,9 @@
         <ion-skeleton-text :animated="true"></ion-skeleton-text>
       </ion-thumbnail>
       <ion-label>
-        <h3>
+        <h1>
           <ion-skeleton-text :animated="true" style="width: 80%;"></ion-skeleton-text>
-        </h3>
+        </h1>
         <p>
           <ion-skeleton-text :animated="true" style="width: 60%;"></ion-skeleton-text>
         </p>
@@ -27,7 +27,7 @@
         />
       </ion-thumbnail>
       <ion-label>
-        <h2>{{ data.patient.name }}</h2>
+        <h1>{{ data.patient.name }}</h1>
         <p>{{ data.patient.species }}</p>
       </ion-label>
     </ion-item>
