@@ -7,19 +7,22 @@ export interface Clinician {
     name: string;
 }
 
-export type ConsultationStatus =
-    "IsReviewAccepted"
+export type ConsultationState =
+    "Pending"
+    | "Initial"
     | "IsRecording"
     | "IsTranslating"
-    | "IsPersisting"
     | "IsReviewing"
-    | "IsCompleted";
+    | "IsReviewAccepted"
+    | "IsPersisting"
+    | "IsCompleted"
+    | "Final";
 
 export interface Consultation {
     id: string;
     patient: Patient;
     clinician: Clinician;
-    state: ConsultationStatus;
+    state: ConsultationState;
     data: string;
     file: object;
 }
