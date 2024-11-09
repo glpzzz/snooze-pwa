@@ -20,7 +20,7 @@
       <ion-list lines="full">
         <ConsultationHeader :data="data"/>
         <ion-item v-if="!dataStatus && data?.state!='Final'">
-          <ion-spinner class="ion-align-self-center"></ion-spinner>
+          <ion-skeleton-text :animated="true" />
         </ion-item>
         <ConsultationTranscriptionsList
             v-if="dataStatus?.isRecording || dataStatus?.isTranslating"
@@ -73,14 +73,13 @@ import {
   IonToolbar,
   IonList,
   IonItem,
-  IonSpinner,
+  IonSkeletonText,
   IonFab,
   IonFabButton,
   IonIcon,
   IonButtons,
   IonBackButton,
   IonAlert,
-  loadingController,
 } from '@ionic/vue';
 import {
   stopOutline, stopSharp,
@@ -96,6 +95,8 @@ import ConsultationTranscriptionsList from "@/components/ConsultationTranscripti
 import ConsultationEditor from "@/components/ConsultationEditor.vue";
 import ConsultationViewer from "@/components/ConsultationViewer.vue";
 import ConsultationHeader from "@/components/ConsultationHeader.vue";
+import {Consultation} from "@/types/Snooze";
+import {useLoading} from "@/composables/useLoading";
 
 const config = new Configuration({
   basePath: import.meta.env.VITE_BACKEND_BASE_URL,
@@ -108,28 +109,17 @@ const route = useRoute();
 const router = useRouter();
 
 const {id} = route.params;
-const data = ref<any | null>(null);
-const dataStatusChannel = ref<any | null>(null);
+const data = ref<Consultation | null>(null);
+const dataStatusChannel = ref<EventSourcePolyfill | null>(null);
 const dataStatus = ref<any | null>(null);
 const isRecordingAudio = ref<boolean>(false);
 const currentError = ref<any | null>(null);
-const loading = ref<boolean>(false);
-let loadingDialog = null;
-
-watch(loading, async (oldValue, newValue) => {
-  if (loading.value) {
-    loadingDialog.present();
-  } else {
-    loadingDialog.dismiss();
-  }
-});
+const {loading} = useLoading();
 
 onMounted(async () => {
-  loadingDialog = await loadingController.create({
-    message: 'Please wait...',
-  });
 
   loading.value = true;
+  console.log('trying to show the loading', loading.value);
   await apiClient.consultationDetails(id)
       .then(response => {
         data.value = response.data;

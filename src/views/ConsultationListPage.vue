@@ -57,24 +57,17 @@ import {ref, onMounted, watch} from "vue";
 import {Configuration, SnoozeApiApi} from '@/generated/openapi-snooze';
 import {useRouter} from 'vue-router';
 import ConsultationListItem from "@/components/ConsultationListItem.vue";
+import {Consultation} from "@/types/Snooze";
+import {useLoading} from "@/composables/useLoading";
+const {loading} = useLoading();
 
 const clinicClinicianId = import.meta.env.VITE_DEFAULT_CLINIC_CLINICIAN_ID;
 const patientId = import.meta.env.VITE_DEFAULT_PATIENT_ID;
 
 const router = useRouter();
 
-const data = ref<any | null>(null);
+const data = ref<Consultation[] | null>(null);
 const currentError = ref<any | null>(null);
-const loading = ref<boolean>(false);
-let loadingDialog = null;
-
-watch(loading, async (oldValue, newValue) => {
-  if (loading.value) {
-    loadingDialog.present();
-  } else {
-    loadingDialog.dismiss();
-  }
-});
 
 const config = new Configuration({
   basePath: import.meta.env.VITE_BACKEND_BASE_URL,
@@ -84,10 +77,6 @@ const config = new Configuration({
 const apiClient = new SnoozeApiApi(config);
 
 onMounted(async () => {
-  loadingDialog = await loadingController.create({
-    message: 'Please wait...',
-  });
-
   loading.value = true;
   await apiClient.consultationsList()
       .then(response => {

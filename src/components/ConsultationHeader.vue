@@ -1,7 +1,7 @@
 <template>
   <ion-item-group>
     <ion-item-divider>
-      <ion-label>Paciente</ion-label>
+      <ion-label>Generales del Paciente</ion-label>
     </ion-item-divider>
     <ion-item v-if="!data">
       <ion-thumbnail slot="start">
