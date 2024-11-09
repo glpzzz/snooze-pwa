@@ -20,18 +20,19 @@
       <ion-list lines="full">
         <ConsultationHeader :data="data"/>
         <ion-item v-if="!dataStatus && data?.state!='Final'">
-          <ion-skeleton-text :animated="true" />
+          <ion-skeleton-text :animated="true"/>
         </ion-item>
         <ConsultationTranscriptionsList
             v-if="dataStatus?.isRecording || dataStatus?.isTranslating"
             :dataStatus="dataStatus"
             @btn-finish-recordings-clicked="finishRecording"/>
         <ConsultationEditor
-            v-else-if="dataStatus?.isReviewing" :data="data"
+            v-else-if="dataStatus?.isReviewing"
+            :data="data" :schema="dataSchema"
             @btn-send-corrections-clicked="sendCorrections"/>
         <ConsultationViewer
             v-else-if="dataStatus?.isCompleted || data?.state=='Final'"
-            :content="dataStatus?.isCompleted ? dataStatus?.structuredTranslation : data?.file.content"/>
+            :content="dataStatus?.isCompleted ? dataStatus?.structuredTranslation : data?.file?.content"/>
       </ion-list>
 
       <ion-fab v-if="dataStatus?.isRecording || dataStatus?.isReviewing" slot="fixed" vertical="bottom"
@@ -112,18 +113,18 @@ const {id} = route.params;
 const data = ref<Consultation | null>(null);
 const dataStatusChannel = ref<EventSourcePolyfill | null>(null);
 const dataStatus = ref<any | null>(null);
+const dataSchema = ref<any | null>(null);
 const isRecordingAudio = ref<boolean>(false);
 const currentError = ref<any | null>(null);
 const {loading} = useLoading();
 
 onMounted(async () => {
-
   loading.value = true;
   console.log('trying to show the loading', loading.value);
   await apiClient.consultationDetails(id)
       .then(response => {
-        data.value = response.data;
-        console.log(response.data);
+        data.value = response.data as Consultation;
+        console.log(data.value);
 
         if (data.value.state !== 'Final') {
           console.log('opening SSE channel');
@@ -133,13 +134,15 @@ onMounted(async () => {
             }
           });
 
-          dataStatusChannel.value.onmessage = (event) => {
+          dataStatusChannel.value.onmessage = (event: MessageEvent) => {
             console.log(event, JSON.parse(event.data));
             dataStatus.value = JSON.parse(event.data);
           };
 
-          dataStatusChannel.value.onerror = (err) => {
-            console.error(err);
+          dataStatusChannel.value.onerror = (err: any) => {
+            if (err.status !== 204) {
+              console.error(err);
+            }
           }
         }
       })
@@ -153,6 +156,13 @@ onUnmounted(() => {
   if (dataStatusChannel.value) {
     console.log('closing the channel');
     dataStatusChannel.value.close();
+  }
+});
+
+watch(dataStatus, async () => {
+  if(dataStatus.value.isReviewing){
+    console.log('load the schema');
+    dataSchema.value = await apiClient.consultationSchema();
   }
 });
 

@@ -26,8 +26,12 @@ const props = defineProps({
   data: {
     type: Object,
     required: true
+  },
+  schema: {
+    type: Object,
+    required: true
   }
-})
+});
 
 const emit = defineEmits(['btnSendCorrectionsClicked']);
 
