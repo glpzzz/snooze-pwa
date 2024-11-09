@@ -1,5 +1,5 @@
 <template>
-  <ion-item :router-link="`/consultations/${consultation.id}`">
+  <ion-item :router-link="`/consultations/${consultation.id}`" detail="true">
     <ion-thumbnail slot="start">
       <img
           src="https://docs-demo.ionic.io/assets/madison.jpg"
