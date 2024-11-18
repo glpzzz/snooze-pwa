@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="primary">
-          <ion-button href="/patients/create">
+          <ion-button router-link="/patients/create">
             <ion-icon slot="icon-only" :ios="addOutline" :md="addSharp"></ion-icon>
           </ion-button>
         </ion-buttons>

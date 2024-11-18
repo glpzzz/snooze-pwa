@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-back-button :default-href="`/patients/{id}`"></ion-back-button>
         </ion-buttons>
         <ion-title>Actualizar Paciente</ion-title>
         <ion-progress-bar v-if="patientsStore.loading" type="indeterminate"></ion-progress-bar>

@@ -3,12 +3,12 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-back-button default-href="/patients"></ion-back-button>
         </ion-buttons>
         <ion-title>Detalles del Paciente</ion-title>
         <ion-progress-bar v-if="patientsStore.loading" type="indeterminate"></ion-progress-bar>
         <ion-buttons slot="primary">
-          <ion-button :href="`/patients/${id}/update`">
+          <ion-button :router-link="`/patients/${id}/update`">
             <ion-icon slot="icon-only" :ios="pencilOutline" :md="pencilSharp"></ion-icon>
           </ion-button>
           <ion-button id="present-delete-alert" color="danger">
