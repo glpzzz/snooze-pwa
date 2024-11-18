@@ -100,7 +100,7 @@
             </ion-list>
           </ion-card-content>
         </ion-card>
-        <ConsultationList v-if="consultationsStore.consultations"
+        <ConsultationList v-if="consultationsStore.consultations && !consultationsStore.loading"
                           :consultations="consultationsStore.consultations"
                           itemType="history"
                           @on-btn-create-consultation-click="createConsultation"/>
