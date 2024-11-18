@@ -6,7 +6,8 @@
           <ion-back-button default-href="/patients"></ion-back-button>
         </ion-buttons>
         <ion-title>Detalles del Paciente</ion-title>
-        <ion-progress-bar v-if="patientsStore.loading" type="indeterminate"></ion-progress-bar>
+        <ion-progress-bar v-if="patientsStore.loading || consultationsStore.loading"
+                          type="indeterminate"></ion-progress-bar>
         <ion-buttons slot="primary">
           <ion-button :router-link="`/patients/${id}/update`">
             <ion-icon slot="icon-only" :ios="pencilOutline" :md="pencilSharp"></ion-icon>
@@ -100,7 +101,8 @@
           </ion-card-content>
         </template>
       </ion-card>
-      <ConsultationList v-if="consultations" :consultations="consultations"/>
+      <ConsultationList v-if="consultations" :consultations="consultations"
+                        @on-btn-create-consultation-click="createConsultation"/>
     </ion-content>
   </ion-page>
 </template>
