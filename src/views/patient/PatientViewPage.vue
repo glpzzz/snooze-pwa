@@ -33,8 +33,8 @@
         </ion-toolbar>
       </ion-header>
 
-      <ion-card>
-        <template v-if="patient">
+      <template v-if="patient">
+        <ion-card>
           <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/card-media.png"/>
           <ion-card-header>
             <ion-card-title>{{ patient.name }}</ion-card-title>
@@ -61,13 +61,13 @@
             <ion-list v-if="patient?.owner">
               <ion-list-header>
                 <ion-label>
-                  Propietario
+                  Datos del Propietario
                 </ion-label>
                 <ion-button @click="isOwnerVisible = !isOwnerVisible">
-                 <ion-icon slot="icon-only"
-                           :md="isOwnerVisible ? eyeSharp : eyeOffSharp"
-                           :ios="isOwnerVisible ? eyeOutline : eyeOffOutline "
-                 ></ion-icon>
+                  <ion-icon slot="icon-only"
+                            :md="isOwnerVisible ? eyeSharp : eyeOffSharp"
+                            :ios="isOwnerVisible ? eyeOutline : eyeOffOutline "
+                  ></ion-icon>
                 </ion-button>
               </ion-list-header>
               <template v-if="isOwnerVisible">
@@ -99,10 +99,10 @@
               </template>
             </ion-list>
           </ion-card-content>
-        </template>
-      </ion-card>
-      <ConsultationList v-if="consultations" :consultations="consultations"
-                        @on-btn-create-consultation-click="createConsultation"/>
+        </ion-card>
+        <ConsultationList v-if="consultations" :consultations="consultations"
+                          @on-btn-create-consultation-click="createConsultation"/>
+      </template>
     </ion-content>
   </ion-page>
 </template>
