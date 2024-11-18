@@ -62,32 +62,40 @@
                 <ion-label>
                   Propietario
                 </ion-label>
+                <ion-button @click="isOwnerVisible = !isOwnerVisible">
+                 <ion-icon slot="icon-only"
+                           :md="isOwnerVisible ? eyeSharp : eyeOffSharp"
+                           :ios="isOwnerVisible ? eyeOutline : eyeOffOutline "
+                 ></ion-icon>
+                </ion-button>
               </ion-list-header>
-              <ion-item>
-                <ion-label>
-                  <strong>Nombre</strong><br>{{ patient.owner.name }}
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="patient.owner.phoneNumber">
-                <ion-label>
-                  <strong>Teléfono</strong><br>{{ patient.owner.phoneNumber }}
-                </ion-label>
-                <ion-button shape="round" fill="clear" slot="end" :href="toPhoneLink(patient.owner.phoneNumber)">
-                  <ion-icon aria-hidden="true" :ios="callOutline" :md="callSharp" slot="icon-only"></ion-icon>
-                </ion-button>
-                <ion-button shape="round" fill="clear" color="success" slot="end"
-                            :href="toWhatsAppLink(patient.owner.phoneNumber)">
-                  <ion-icon aria-hidden="true" :ios="logoWhatsapp" :md="logoWhatsapp" slot="icon-only"></ion-icon>
-                </ion-button>
-              </ion-item>
-              <ion-item v-if="patient.owner.email">
-                <ion-label>
-                  <strong>Email</strong><br>{{ patient.owner.email }}
-                </ion-label>
-                <ion-button shape="round" fill="clear" slot="end" :href="toMailtoLink(patient.owner.email)">
-                  <ion-icon aria-hidden="true" :ios="mailOutline" :md="mailSharp" slot="icon-only"></ion-icon>
-                </ion-button>
-              </ion-item>
+              <template v-if="isOwnerVisible">
+                <ion-item>
+                  <ion-label>
+                    <strong>Nombre</strong><br>{{ patient.owner.name }}
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="patient.owner.phoneNumber">
+                  <ion-label>
+                    <strong>Teléfono</strong><br>{{ patient.owner.phoneNumber }}
+                  </ion-label>
+                  <ion-button shape="round" fill="clear" slot="end" :href="toPhoneLink(patient.owner.phoneNumber)">
+                    <ion-icon aria-hidden="true" :ios="callOutline" :md="callSharp" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button shape="round" fill="clear" color="success" slot="end"
+                              :href="toWhatsAppLink(patient.owner.phoneNumber)">
+                    <ion-icon aria-hidden="true" :ios="logoWhatsapp" :md="logoWhatsapp" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </ion-item>
+                <ion-item v-if="patient.owner.email">
+                  <ion-label>
+                    <strong>Email</strong><br>{{ patient.owner.email }}
+                  </ion-label>
+                  <ion-button shape="round" fill="clear" slot="end" :href="toMailtoLink(patient.owner.email)">
+                    <ion-icon aria-hidden="true" :ios="mailOutline" :md="mailSharp" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </template>
             </ion-list>
           </ion-card-content>
         </template>
@@ -103,7 +111,7 @@ import {
   mailOutline, mailSharp,
   callOutline, callSharp,
   logoWhatsapp,
-  trashOutline, trashSharp,
+  trashOutline, trashSharp, eyeOffSharp, eyeOutline, eyeSharp, eyeOffOutline
 } from "ionicons/icons";
 import {
   IonButton,
@@ -134,9 +142,9 @@ import {usePatientStore} from "@/stores/patientStore";
 import {formatTimeAgo} from "@vueuse/core";
 import {useSpecialLinks} from "@/composables/useSpecialLinks";
 import ConsultationList from "@/components/ConsultationList.vue";
+import {useConsultationStore} from "@/stores/consultationStore";
 
 const {apiClient} = useSnoozeApi();
-const patientsStore = usePatientStore();
 
 const route = useRoute();
 const {id} = route.params as { id: string };
@@ -145,7 +153,10 @@ const {toPhoneLink, toWhatsAppLink, toMailtoLink} = useSpecialLinks();
 
 const patient = ref<PatientDto | null>(null)
 const consultations = ref<Array<ConsultationDetailDto>>([])
+const isOwnerVisible = ref<boolean>(false);
 
+const patientsStore = usePatientStore();
+const consultationsStore = useConsultationStore();
 onMounted(async () => {
   try {
     patient.value = await patientsStore.fetchPatient(id);
@@ -175,5 +186,15 @@ const deleteAlertButtons = [
     },
   },
 ];
+
+const createConsultation = async () => {
+  console.log('onBtnCreateConsultationClick');
+  try {
+    const consultation = await consultationsStore.createConsultation(id, import.meta.env.VITE_DEFAULT_CLINIC_CLINICIAN_ID);
+    await router.push(`/consultations/${consultation.id}`);
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 </script>
