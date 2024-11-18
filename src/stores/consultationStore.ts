@@ -22,6 +22,18 @@ export const useConsultationStore = defineStore('consultationStore', () => {
         }
     };
 
+    const getConsultationsForClient = async (patientId: string) => {
+        loading.value = true;
+        try {
+            const response = await apiClient.getPatientConsultations(patientId);
+            consultations.value = response.data as Array<ConsultationDetailDto>;
+        } catch (error) {
+            console.error('Error fetching consultations:', error);
+        } finally {
+            loading.value = false;
+        }
+    };
+
     const getConsultation = async (id: string) => {
         loading.value = true;
         try {
@@ -51,5 +63,5 @@ export const useConsultationStore = defineStore('consultationStore', () => {
         }
     };
 
-    return {consultations, loading, getConsultations, getConsultation, createConsultation};
+    return {consultations, loading, getConsultations, getConsultationsForClient, getConsultation, createConsultation};
 });

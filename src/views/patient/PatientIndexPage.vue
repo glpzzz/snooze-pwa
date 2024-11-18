@@ -29,7 +29,7 @@
           </ion-avatar>
           <ion-label>
             <h2>{{ patient.name }}</h2>
-            <p>{{ patient.species }} - {{ patient.breed }}</p>
+            <p>{{ patient.species }} / {{ patient.breed }}</p>
           </ion-label>
         </ion-item>
       </ion-list>

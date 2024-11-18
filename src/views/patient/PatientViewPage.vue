@@ -100,7 +100,9 @@
             </ion-list>
           </ion-card-content>
         </ion-card>
-        <ConsultationList v-if="consultations" :consultations="consultations"
+        <ConsultationList v-if="consultationsStore.consultations"
+                          :consultations="consultationsStore.consultations"
+                          itemType="history"
                           @on-btn-create-consultation-click="createConsultation"/>
       </template>
     </ion-content>
@@ -162,7 +164,7 @@ const consultationsStore = useConsultationStore();
 onMounted(async () => {
   try {
     patient.value = await patientsStore.fetchPatient(id);
-    consultations.value = (await apiClient.consultationsList()).data;
+    await consultationsStore.getConsultationsForClient(id);
   } catch (err) {
     console.error(err);
   }

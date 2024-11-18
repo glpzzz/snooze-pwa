@@ -8,7 +8,10 @@
         <ion-icon slot="icon-only" :md="addSharp" :ios="addOutline"></ion-icon>
       </ion-button>
     </ion-list-header>
-    <ConsultationListItem v-for="consultation in consultations" :key="consultation.id as string" :consultation="consultation"/>
+    <ConsultationListItem v-for="consultation in consultations"
+                          :key="consultation.id as string"
+                          :consultation="consultation"
+                          :itemType="itemType"/>
   </ion-list>
 </template>
 <script setup lang="ts">
@@ -19,6 +22,7 @@ import {ConsultationDetailDto} from "@/generated/openapi-snooze";
 
 defineProps<{
   consultations: Array<ConsultationDetailDto>
+  itemType: string,
 }>();
 
 defineEmits(['onBtnCreateConsultationClick'])

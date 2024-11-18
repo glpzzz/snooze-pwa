@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/"></ion-back-button>
+          <ion-back-button :default-href="`/patients/${data?.patient?.id}`"></ion-back-button>
         </ion-buttons>
         <ion-title v-if="data">{{ new Date(data.date).toLocaleString() }}</ion-title>
       </ion-toolbar>

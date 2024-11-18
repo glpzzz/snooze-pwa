@@ -28,7 +28,7 @@
       </ion-thumbnail>
       <ion-label>
         <h1>{{ data.patient.name }}</h1>
-        <p>{{ data.patient.species }}</p>
+        <p>{{ data.patient.species }} / {{ data.patient.breed }}</p>
       </ion-label>
     </ion-item>
   </ion-item-group>
