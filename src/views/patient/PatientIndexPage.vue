@@ -18,7 +18,7 @@
           <ion-title size="large">Pacientes</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-list :inset="true">
+      <ion-list>
         <ion-item
             v-for="patient in patientsStore.patients"
             :key="patient.id as string"
