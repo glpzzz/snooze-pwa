@@ -201,6 +201,34 @@ const toggleRecording = async () => {
           mimeType: result.value.mimeType,
         };
 
+        // Decode Base64 to a binary string
+        const binaryString = atob(addRecordingDto.recording);
+
+        // Convert the binary string to a Uint8Array
+        const byteArray = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          byteArray[i] = binaryString.charCodeAt(i);
+        }
+
+        // Create a Blob with the byte array and specified MIME type
+        const blob = new Blob([byteArray], { type: addRecordingDto.mimeType});
+
+        // Create a URL for the blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a link element
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `recording.${addRecordingDto.mimeType.split('/')[1]}`;
+
+        // Append the link to the document and trigger a click event
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up by removing the link and revoking the URL
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
         console.log(id, addRecordingDto);
         dataStatus.value.transcriptions.push({
           id: 'lolo',
