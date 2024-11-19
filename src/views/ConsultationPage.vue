@@ -197,7 +197,8 @@ const toggleRecording = async () => {
       VoiceRecorder.stopRecording().then(async (result) => {
 
         const addRecordingDto = {
-          recording: result.value.recordDataBase64
+          recording: result.value.recordDataBase64,
+          mimeType: result.value.mimeType,
         };
 
         console.log(id, addRecordingDto);
