@@ -1,26 +1,31 @@
 <template>
-  <template v-for="key in Object.keys(filteredContent)" :key="key">
-    <component :is="`h${props.level}`" class="ion-text-capitalize" style="font-weight: bold; margin-top: 1rem">{{
-        key
-      }}
-    </component>
-    <ul v-if="Array.isArray(content[key])">
-      <li v-for="item in content[key]" :key="item">
-        <template v-if="typeof item === 'string'">{{ item }}</template>
-        <dl v-else-if="typeof item === 'object' && !Array.isArray(item)">
-          <template v-for="key in Object.keys(item)" :key="key">
-            <dt>{{ key }}</dt>
-            <dd>{{ item[key] }}</dd>
-          </template>
-        </dl>
-      </li>
-    </ul>
-    <ConsultationViewerSection
-        v-else-if="typeof content[key] === 'object' && !Array.isArray(content[key])"
-        :content="content[key]"
-        :level="props.level + 1"/>
-    <p v-else>{{ content[key] }}</p>
-  </template>
+  <dl>
+    <div v-for="key in Object.keys(filteredContent)" :key="key">
+      <dt class="ion-text-capitalize">{{ key }}</dt>
+      <dd>
+
+        <ul v-if="Array.isArray(content[key])">
+          <li v-for="item in content[key]" :key="item">
+            <template v-if="typeof item === 'string'">{{ item }}</template>
+            <dl v-else-if="typeof item === 'object' && !Array.isArray(item)">
+              <template v-for="key in Object.keys(item)" :key="key">
+                <dt>{{ key }}</dt>
+                <dd>{{ item[key] }}</dd>
+              </template>
+            </dl>
+          </li>
+        </ul>
+
+        <ConsultationViewerSection
+            v-else-if="typeof content[key] === 'object' && !Array.isArray(content[key])"
+            :content="content[key]"
+            :level="props.level + 1"/>
+
+        <p v-else>{{ filteredContent[key] }}</p>
+
+      </dd>
+    </div>
+  </dl>
 </template>
 
 <script setup lang="ts">
@@ -46,6 +51,20 @@ const filteredContent = computed(() => {
 });
 
 </script>
+
+<style scoped>
+dt {
+  font-weight: bold;
+  margin-top: 1rem;
+  text-transform: capitalize;
+}
+dd {
+  margin-left: 0;
+}
+dd > dl {
+  margin-left: 1rem;
+}
+</style>
 
 
 
