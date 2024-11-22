@@ -19,10 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps, defineEmits} from "vue";
 import {IonItemGroup, IonItemDivider, IonItem, IonLabel, IonButton} from "@ionic/vue";
 
-const props = defineProps({
+defineProps({
   data: {
     type: Object,
     required: true
@@ -33,7 +32,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['btnSendCorrectionsClicked']);
+defineEmits(['btnSendCorrectionsClicked']);
 
 </script>
 

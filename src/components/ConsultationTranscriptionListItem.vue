@@ -12,9 +12,8 @@
 <script setup lang="ts">
 
 import {IonItem, IonLabel, IonSkeletonText} from "@ionic/vue";
-import { defineProps } from "vue";
 
-const props = defineProps({
+defineProps({
   transcription: {
     type: Object,
     required: true

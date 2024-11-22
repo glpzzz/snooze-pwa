@@ -34,16 +34,15 @@
 <script setup lang="ts">
 
 import {IonButton, IonItem, IonItemDivider, IonItemGroup, IonLabel} from "@ionic/vue";
-import {defineProps} from "vue";
 import ConsultationTranscriptionListItem from "@/components/ConsultationTranscriptionListItem.vue";
 
-const props = defineProps({
+defineProps({
   dataStatus: {
     type: Object,
     required: true
   }
 })
 
-const emit = defineEmits(['btnFinishRecordingsClicked'])
+defineEmits(['btnFinishRecordingsClicked'])
 
 </script>

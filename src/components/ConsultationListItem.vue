@@ -22,7 +22,6 @@
 
 <script setup lang="ts">
 
-import {defineProps} from 'vue';
 import {Consultation} from "@/types/Snooze";
 import {IonItem, IonLabel, IonThumbnail} from "@ionic/vue";
 

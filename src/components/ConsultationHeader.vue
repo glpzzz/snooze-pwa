@@ -36,10 +36,9 @@
 
 <script setup lang="ts">
 
-import {defineProps} from "vue";
 import {IonItem, IonItemDivider, IonItemGroup, IonLabel, IonSkeletonText, IonThumbnail} from "@ionic/vue";
 
-const props = defineProps({
+defineProps({
   data: {
     type: Object,
   }
