@@ -97,6 +97,7 @@ import ConsultationEditor from "@/components/ConsultationEditor.vue";
 import ConsultationViewer from "@/components/ConsultationViewer.vue";
 import ConsultationHeader from "@/components/ConsultationHeader.vue";
 import {useLoading} from "@/composables/useLoading";
+import {base64ToFile} from "@/utils/fileUtils";
 
 const config = new Configuration({
   basePath: import.meta.env.VITE_BACKEND_BASE_URL,
@@ -108,7 +109,7 @@ const apiClient = new SnoozeApiApi(config);
 const route = useRoute();
 const router = useRouter();
 
-const {id} = route.params as { id:string };
+const {id} = route.params as { id: string };
 const data = ref<ConsultationDetailDto | null>(null);
 const dataStatusChannel = ref<EventSourcePolyfill | null>(null);
 const dataStatus = ref<any | null>(null);
@@ -159,7 +160,7 @@ onUnmounted(() => {
 });
 
 watch(dataStatus, async () => {
-  if(dataStatus.value.isReviewing){
+  if (dataStatus.value.isReviewing) {
     console.log('load the schema');
     dataSchema.value = await apiClient.consultationSchema();
   }
@@ -196,18 +197,14 @@ const toggleRecording = async () => {
 
       VoiceRecorder.stopRecording().then(async (result) => {
 
-        const addRecordingDto = {
-          recording: result.value.recordDataBase64,
-          mimeType: result.value.mimeType,
-        };
+        const recordingFile = base64ToFile(result.value.recordDataBase64, 'recording', result.value.mimeType);
 
-        console.log(id, addRecordingDto);
         dataStatus.value.transcriptions.push({
           id: 'lolo',
           text: '...'
         });
 
-        await apiClient.addRecording(id, addRecordingDto)
+        await apiClient.addRecording(id, recordingFile)
             .then(response => {
               console.log(response);
             })
