@@ -3,11 +3,7 @@
     <ion-item-divider>
       <ion-label>Notas de consulta</ion-label>
     </ion-item-divider>
-    <ion-item>
-      <ion-label>
-        <ConsultationViewerSection :content="content" />
-      </ion-label>
-    </ion-item>
+    <ConsultationViewerSection :content="content"/>
   </ion-item-group>
 </template>
 
