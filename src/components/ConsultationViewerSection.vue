@@ -50,6 +50,7 @@
 <script setup lang="ts">
 
 import {computed} from "vue";
+import { IonItem, IonLabel } from "@ionic/vue";
 
 const props = defineProps({
   content: {

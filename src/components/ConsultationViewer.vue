@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 
-import {IonItemGroup, IonItemDivider, IonItem, IonLabel} from "@ionic/vue";
+import {IonItemGroup, IonItemDivider, IonLabel} from "@ionic/vue";
 import ConsultationViewerSection from "@/components/ConsultationViewerSection.vue";
 
 defineProps({

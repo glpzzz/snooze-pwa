@@ -194,16 +194,12 @@ const toggleRecording = async () => {
     }
   } else {
     try {
-
       VoiceRecorder.stopRecording().then(async (result) => {
-
         const recordingFile = base64ToFile(result.value.recordDataBase64, 'recording', result.value.mimeType);
-
         dataStatus.value.transcriptions.push({
           id: 'lolo',
           text: '...'
         });
-
         await apiClient.addRecording(id, recordingFile)
             .then(response => {
               console.log(response);
@@ -261,6 +257,7 @@ const closeConsultation = async () => {
 }
 
 const displayError = (e) => {
+  alert(JSON.stringify(e));
   currentError.value = {
     header: 'Error',
     subHeader: e.name,
